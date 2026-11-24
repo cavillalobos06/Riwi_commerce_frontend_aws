@@ -4,6 +4,17 @@ import * as quotesService from "../../services/quotesService";
 import { formatMoney, formatDate, QUOTE_STATUS_LABELS, QUOTE_STATUS_STYLES } from "../../utils/quotesFormat";
 import styles from "./QuoteDetailModal.module.css";
 
+function isImageDocument(url) {
+  if (!url) return false;
+
+  try {
+    const pathname = new URL(url).pathname.toLowerCase();
+    return /\.(png|jpe?g|webp)$/.test(pathname);
+  } catch {
+    return false;
+  }
+}
+
 export default function QuoteDetailModal({ isOpen, quoteId, clientName, onClose, onChanged }) {
   const [quote, setQuote] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -139,31 +150,61 @@ export default function QuoteDetailModal({ isOpen, quoteId, clientName, onClose,
               <span>Última actualización: {formatDate(quote.updatedAt)}</span>
             </div>
 
-            <div className={styles.documentSection}>
-              <div className={styles.documentInfo}>
-                <FileText size={16} />
-                {quote.documentUrl ? (
-                  <a href={quote.documentUrl} target="_blank" rel="noopener noreferrer" className={styles.documentLink}>
-                    Ver documento adjunto
-                    <ExternalLink size={12} />
-                  </a>
-                ) : (
-                  <span>Sin documento adjunto</span>
-                )}
-              </div>
-              <label className={styles.uploadBtn}>
-                <Upload size={14} />
-                <span>{quote.documentUrl ? "Reemplazar" : "Adjuntar"} archivo</span>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept=".pdf,.png,.jpg,.jpeg,.webp"
-                  onChange={handleFileSelected}
-                  disabled={actionLoading}
-                  hidden
-                />
-              </label>
-            </div>
+           <div className={styles.documentSection}>
+        <div className={styles.documentInfo}>
+          <FileText size={16} />
+
+    {quote.documentUrl ? (
+      <span>Documento adjunto</span>
+    ) : (
+      <span>Sin documento adjunto</span>
+    )}
+  </div>
+
+  {quote.documentUrl && (
+    <div className={styles.documentPreview}>
+      {isImageDocument(quote.documentUrl) ? (
+        <a
+          href={quote.documentUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={styles.imagePreviewLink}
+        >
+          <img
+            src={quote.documentUrl}
+            alt="Imagen adjunta a la cotización"
+            className={styles.documentImage}
+          />
+          <span>Ver imagen completa</span>
+        </a>
+      ) : (
+        <a
+          href={quote.documentUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={styles.documentLink}
+        >
+          Ver documento adjunto
+          <ExternalLink size={12} />
+        </a>
+      )}
+    </div>
+  )}
+
+  <label className={styles.uploadBtn}>
+    <Upload size={14} />
+    <span>{quote.documentUrl ? "Reemplazar" : "Adjuntar"} archivo</span>
+
+    <input
+      ref={fileInputRef}
+      type="file"
+      accept=".pdf,.png,.jpg,.jpeg,.webp"
+      onChange={handleFileSelected}
+      disabled={actionLoading}
+      hidden
+    />
+  </label>
+</div>
           </div>
         ) : null}
 
